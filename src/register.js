@@ -1,5 +1,6 @@
-import VerifierAlgorithm from 'did-jwt/lib/VerifierAlgorithm'
+import { verifyJWT } from 'did-jwt'
 import DidDocument from 'ipfs-did-document'
+import base64url from 'base64url'
 import { registerMethod } from 'did-resolver'
 
 const PUBKEY_IDS = ['signingKey', 'managementKey', 'encryptionKey']
@@ -16,8 +17,8 @@ async function resolve (ipfs, cid, isRoot) {
     validateDoc(doc)
     if (doc.root) {
       if (isRoot) throw new Error('Only one layer subDoc allowed')
-      const rootDoc = await resolve(ipfs, doc.root, true)
-      verifyProof(rootDoc, doc)
+      const rootDoc = await resolve(ipfs, doc.root.split(':')[2], true)
+      await verifyProof(doc)
       doc = mergeDocuments(rootDoc, doc)
     }
   } catch (e) {
@@ -31,29 +32,40 @@ async function resolve (ipfs, cid, isRoot) {
 
 function validateDoc (doc) {
   let pubKeyIds = PUBKEY_IDS
-  if (!doc || !doc.publicKeys || !doc.authentication) {
+  if (!doc || !doc.publicKey || !doc.authentication) {
     throw new Error('Not a valid 3ID')
   }
   if (doc.root) {
     pubKeyIds = SUB_PUBKEY_IDS
     if (!doc.space) throw new Error('Not a valid 3ID')
   }
-  doc.publicKeys.map(entry => {
+  doc.publicKey.map(entry => {
     const id = entry.id.split('#')[1]
     if (!pubKeyIds.includes(id)) throw new Error('Not a valid 3ID')
   })
 }
 
-function verifyProof (rootDoc, subDoc) {
-  const signingKey = subDoc.publicKeys.find(entry => entry.id.includes(SUB_PUBKEY_IDS[0])).publicKeyHex
-  const encryptionKey = subDoc.publicKeys.find(entry => entry.id.includes(SUB_PUBKEY_IDS[1])).publicKeyBase64
-  const data = `${signingKey}${encryptionKey}${subDoc.space}${subDoc.root}`
-  const verify = VerifierAlgorithm(subDoc.proof.alg)
-  verify(data, subDoc.proof.signature, rootDoc.publicKeys)
+function encodeSection (data) {
+  return base64url.encode(JSON.stringify(data))
+}
+
+async function verifyProof (subDoc) {
+  const subSigningKey = subDoc.publicKey.find(entry => entry.id.includes(SUB_PUBKEY_IDS[0])).publicKeyHex
+  const subEncryptionKey = subDoc.publicKey.find(entry => entry.id.includes(SUB_PUBKEY_IDS[1])).publicKeyBase64
+  const payload = encodeSection({
+    iat: null,
+    subSigningKey,
+    subEncryptionKey,
+    space: subDoc.space,
+    iss: subDoc.root
+  })
+  const header = encodeSection({ typ: 'JWT', alg: subDoc.proof.alg })
+  const jwt = `${header}.${payload}.${subDoc.proof.signature}`
+  await verifyJWT(jwt)
 }
 
 function mergeDocuments (doc, subDoc) {
-  subDoc.publicKeys = doc.publicKeys.concat(subDoc.publicKeys)
+  subDoc.publicKey = doc.publicKey.concat(subDoc.publicKey)
   subDoc.authentication = doc.authentication.concat(subDoc.authentication)
   return subDoc
 }

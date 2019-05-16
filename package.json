@@ -1,8 +1,8 @@
 {
   "name": "3id-resolver",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Resolve 3ID documents",
-  "main": "src/register.js",
+  "main": "lib/register.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/uport-project/muport-did-resolver.git"
@@ -13,8 +13,9 @@
   "author": "3box <team@3box.io>",
   "license": "MIT",
   "scripts": {
-    "test": "rm -rf ./.ipfs; jest --runInBand --testURL=\"http://localhost\"",
-    "prepublishOnly": "npm test"
+    "build": "./node_modules/.bin/babel src -d lib",
+    "test": "rm -rf ./.ipfs; jest --runInBand --testURL=\"http://localhost\" ./src",
+    "prepublishOnly": "npm test; npm run build"
   },
   "jest": {
     "coverageDirectory": "./coverage/",

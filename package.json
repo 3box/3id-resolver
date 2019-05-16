@@ -1,0 +1,57 @@
+{
+  "name": "3id-resolver",
+  "version": "0.0.1",
+  "description": "Resolve 3ID documents",
+  "main": "src/register.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uport-project/muport-did-resolver.git"
+  },
+  "files": [
+    "src"
+  ],
+  "author": "3box <team@3box.io>",
+  "license": "MIT",
+  "scripts": {
+    "test": "rm -rf ./.ipfs; jest --runInBand --testURL=\"http://localhost\"",
+    "prepublishOnly": "npm test"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.4.0",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "ipfs": "^0.35.0",
+    "jest": "^22.4.0",
+    "regenerator-runtime": "^0.11.1",
+    "standard": "^11.0.0"
+  },
+  "dependencies": {
+    "did-jwt": "^0.1.3",
+    "did-resolver": "0.0.6",
+    "ipfs-did-document": "^1.2.2",
+    "ipfsd-ctl": "^0.42.2"
+  },
+  "browser": {
+    "xmlhttprequest": false
+  },
+  "standard": {
+    "ignore": [],
+    "globals": [
+      "it",
+      "describe",
+      "expect",
+      "jest",
+      "beforeAll",
+      "beforeEach",
+      "afterAll",
+      "afterEach"
+    ]
+  }
+}

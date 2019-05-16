@@ -45,7 +45,6 @@ describe('3ID Resolver', () => {
         doc.addAuthentication('Secp256k1SignatureAuthentication2018', 'signingKey')
         const cid = await doc.commit({ noTimestamp: true })
         const rawDoc = await DidDocument.cidToDocument(ipfs, cid)
-        console.log(rawDoc)
         await expect(resolve(doc.DID)).resolves.toEqual(rawDoc)
         rootCid = cid
       })

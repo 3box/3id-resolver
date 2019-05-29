@@ -66,7 +66,6 @@ async function verifyProof (subDoc) {
 
 function mergeDocuments (doc, subDoc) {
   subDoc.publicKey = doc.publicKey.concat(subDoc.publicKey)
-  subDoc.authentication = doc.authentication.concat(subDoc.authentication)
   return subDoc
 }
 

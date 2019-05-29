@@ -1,5 +1,8 @@
 # Release notes
 
+## v0.0.5
+* Fix: workaround for bug in did-jwt (see: https://github.com/uport-project/did-jwt/issues/39)
+
 ## v0.0.2
 * Fix: Remove unused dependency
 

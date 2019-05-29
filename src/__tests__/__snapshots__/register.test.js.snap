@@ -5,10 +5,6 @@ Object {
   "@context": "https://w3id.org/did/v1",
   "authentication": Array [
     Object {
-      "publicKey": "did:3:zdpuAtgNc4w55mZTYL2YLhDNZgf2mrLnJ8k2Vt4Pccrxbqh6n#signingKey",
-      "type": "Secp256k1SignatureAuthentication2018",
-    },
-    Object {
       "publicKey": "did:3:zdpuAsUryAVEbMHNi4Xdm8AYSohJoMKgqc9mbQDJEeGPVTPG2#subSigningKey",
       "type": "Secp256k1SignatureAuthentication2018",
     },

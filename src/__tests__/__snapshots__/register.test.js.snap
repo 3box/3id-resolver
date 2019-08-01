@@ -1,5 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`3ID Resolver resolve 3ID root 3ID resolves valid document 1`] = `[Error: Path is not pinned]`;
+
 exports[`3ID Resolver resolve 3ID sub 3ID resolves on valid sub document 1`] = `
 Object {
   "@context": "https://w3id.org/did/v1",
@@ -45,3 +47,5 @@ Object {
   "space": "a space name",
 }
 `;
+
+exports[`3ID Resolver resolve 3ID sub 3ID resolves on valid sub document 2`] = `[Error: Path is not pinned]`;

@@ -7,20 +7,21 @@ const PUBKEY_IDS = ['signingKey', 'managementKey', 'encryptionKey']
 const SUB_PUBKEY_IDS = ['subSigningKey', 'subEncryptionKey']
 
 function register (ipfs, opts = {}) {
-  registerMethod('3', (_, { id }) => resolve(ipfs, id))
+  registerMethod('3', (_, { id }) => resolve(ipfs, id, opts))
 }
 
-async function resolve (ipfs, cid, isRoot) {
+async function resolve (ipfs, cid, { isRoot, pin }) {
   let doc
   try {
     doc = await DidDocument.cidToDocument(ipfs, cid)
     validateDoc(doc)
     if (doc.root) {
       if (isRoot) throw new Error('Only one layer subDoc allowed')
-      const rootDoc = await resolve(ipfs, doc.root.split(':')[2], true)
+      const rootDoc = await resolve(ipfs, doc.root.split(':')[2], { isRoot: true })
       await verifyProof(doc)
       doc = mergeDocuments(rootDoc, doc)
     }
+    if (pin) await ipfs.pin.add(cid)
   } catch (e) {
     try {
       await ipfs.pin.rm(cid)

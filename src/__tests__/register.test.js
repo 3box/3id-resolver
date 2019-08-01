@@ -22,7 +22,7 @@ describe('3ID Resolver', () => {
   })
 
   describe('resolve 3ID', () => {
-    let rootDID
+    let rootDID, rootCID
 
     describe('root 3ID', async () => {
       let doc
@@ -46,11 +46,21 @@ describe('3ID Resolver', () => {
         const rawDoc = await DidDocument.cidToDocument(ipfs, cid)
         await expect(resolve(doc.DID)).resolves.toEqual(rawDoc)
         rootDID = doc.DID
+        rootCID = cid
+        await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
+      })
+
+      it('should pin DID document if option given', async () => {
+        register(ipfs, { pin: true })
+        await resolve(rootDID)
+        expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
+        register(ipfs)
+        await ipfs.pin.rm(rootCID)
       })
     })
 
     describe('sub 3ID', () => {
-      let doc
+      let doc, subDID, subCID
 
       beforeEach(async () => {
         doc = new DidDocument(ipfs, '3')
@@ -92,9 +102,19 @@ describe('3ID Resolver', () => {
         })
         const signature = jwt.split('.')[2]
         doc.addCustomProperty('proof', { alg: 'ES256K', signature })
-        await doc.commit({ noTimestamp: true })
+        const cid = await doc.commit({ noTimestamp: true })
+        subDID = doc.DID
+        subCID = cid
 
         await expect(resolve(doc.DID)).resolves.toMatchSnapshot()
+        await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
+      })
+
+      it('should pin DID document if option given', async () => {
+        register(ipfs, { pin: true })
+        await resolve(subDID)
+        expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
+        expect((await ipfs.pin.ls(subCID))[0].hash).toEqual(subCID.toString())
       })
     })
   })

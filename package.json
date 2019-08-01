@@ -1,6 +1,6 @@
 {
   "name": "3id-resolver",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Resolve 3ID documents",
   "main": "lib/register.js",
   "repository": {

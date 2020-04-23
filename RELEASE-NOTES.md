@@ -1,5 +1,9 @@
 # Release notes
 
+## v1.0.0
+* Chore: upgrade `did-resolver` and `did-jwt` packages
+* Feat: update usage interface to `did-resolver` 1.0 method
+
 ## v0.0.6
 * Feat: add options to pin DID documents when resolving
 

@@ -8,19 +8,23 @@ It requires the `did-resolver` library, which is the primary interface for resol
 
 ## Resolving a DID document
 
-The resolver presents a simple `resolver()` function that returns a ES6 Promise returning the DID document.
+A 3ID resolver is created by passing an IPFS instance to the `getResolver()` function. To use the resolver returned, it must be passed to a `did-resolver` instance during instantiation, for example:
 
 ```js
-import resolve from 'did-resolver'
-import registerResolver from '3id-resolver'
+import { Resolver } from 'did-resolver'
+import { getResolver } from '3id-resolver'
 
-registerResolver(ipfs)
+const threeIdResolver = getResolver(ipfs)
+const resolver = new Resolver(threeIdResolver)
 
-resolve('did:3:QmRhjfL4HLdB8LovGf1o43NJ8QnbfqmpdnTuBvZTewnuBV').then(doc => console.log)
+resolver.resolve('did:3:QmRhjfL4HLdB8LovGf1o43NJ8QnbfqmpdnTuBvZTewnuBV').then(doc => console.log)
 
 // You can also use ES7 async/await syntax
-const doc = await resolve('did:muport:zdpuAt4qH8ur3vHpVrP1xb7rtJuyVUVbRiGatkkVcJZRgAXDf')
+const doc = await resolver.resolve('did:muport:zdpuAt4qH8ur3vHpVrP1xb7rtJuyVUVbRiGatkkVcJZRgAXDf')
 ```
+
+See the [did-resolver docs](https://github.com/decentralized-identity/did-resolver) for more general usage information on DID resolvers.
+
 Result:
 ```js
 {

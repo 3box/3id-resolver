@@ -1,6 +1,6 @@
-import resolve from 'did-resolver'
+import { Resolver } from 'did-resolver'
 import base64url from 'base64url'
-import register from '../register'
+import { getResolver } from '../resolver'
 import DidDocument from 'ipfs-did-document'
 import { SimpleSigner, createJWT } from 'did-jwt'
 import IPFS from 'ipfs'
@@ -8,13 +8,19 @@ import IPFS from 'ipfs'
 const PRIV_KEY = '278a5de700e29faae8e40e366ec5012b5ec63d36ec77e8a2417154cc1d25383f'
 const PUB_KEY = '03fdd57adec3d438ea237fe46b33ee1e016eda6b585c3e27ea66686c2ea5358479'
 
-
 describe('3ID Resolver', () => {
-  let ipfs, ipfsd
+  let ipfs, resolver
 
   beforeAll(async () => {
-    ipfs = await initIPFS()
-    register(ipfs)
+    ipfs = await IPFS.create({
+      repo: './.ipfs',
+      config: { Addresses: {}, Discovery: {}, Bootstrap: [] }
+    })
+  })
+
+  beforeEach(() => {
+    const threeIdResolver = getResolver(ipfs)
+    resolver = new Resolver(threeIdResolver)
   })
 
   afterAll(async () => {
@@ -34,7 +40,7 @@ describe('3ID Resolver', () => {
       it('throws on invalid document', async () => {
         doc.addPublicKey('signingKey', 'Secp256k1VerificationKey2018', 'publicKeyHex', 'not a pub key')
         await doc.commit({ noTimestamp: true })
-        await expect(resolve(doc.DID)).rejects.toEqual(new Error('Invalid 3ID'))
+        await expect(resolver.resolve(doc.DID)).rejects.toEqual(new Error('Invalid 3ID'))
       })
 
       it('resolves valid document', async () => {
@@ -44,17 +50,17 @@ describe('3ID Resolver', () => {
         doc.addAuthentication('Secp256k1SignatureAuthentication2018', 'signingKey')
         const cid = await doc.commit({ noTimestamp: true })
         const rawDoc = await DidDocument.cidToDocument(ipfs, cid)
-        await expect(resolve(doc.DID)).resolves.toEqual(rawDoc)
+        await expect(resolver.resolve(doc.DID)).resolves.toEqual(rawDoc)
         rootDID = doc.DID
         rootCID = cid
         await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
       })
 
       it('should pin DID document if option given', async () => {
-        register(ipfs, { pin: true })
-        await resolve(rootDID)
+        const threeIdResolverPin = getResolver(ipfs, { pin: true })
+        const resolver2 = new Resolver(threeIdResolverPin)
+        await resolver2.resolve(rootDID)
         expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
-        register(ipfs)
         await ipfs.pin.rm(rootCID)
       })
     })
@@ -76,7 +82,7 @@ describe('3ID Resolver', () => {
         doc.addCustomProperty('proof', { alg: 'ES256K', signature })
         await doc.commit({ noTimestamp: true })
 
-        await expect(resolve(doc.DID)).rejects.toEqual(new Error('Invalid 3ID'))
+        await expect(resolver.resolve(doc.DID)).rejects.toEqual(new Error('Invalid 3ID'))
       })
 
       it('resolves on valid sub document', async () => {
@@ -106,30 +112,17 @@ describe('3ID Resolver', () => {
         subDID = doc.DID
         subCID = cid
 
-        await expect(resolve(doc.DID)).resolves.toMatchSnapshot()
+        await expect(resolver.resolve(doc.DID)).resolves.toMatchSnapshot()
         await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
       })
 
       it('should pin DID document if option given', async () => {
-        register(ipfs, { pin: true })
-        await resolve(subDID)
+        const threeIdResolverPin = getResolver(ipfs, { pin: true })
+        const resolver2 = new Resolver(threeIdResolverPin)
+        await resolver2.resolve(subDID)
         expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
         expect((await ipfs.pin.ls(subCID))[0].hash).toEqual(subCID.toString())
       })
     })
   })
 })
-
-const initIPFS = async () => {
-  return new Promise((resolve, reject) => {
-    let ipfs = new IPFS({
-      repo: './.ipfs',
-      config: { Addresses: {}, Discovery: {}, Bootstrap: [] }
-    })
-    ipfs.on('error', reject)
-    ipfs.on('ready', () => resolve(ipfs))
-  })
-}
-
-      //const pubkeys = this._keyrings[spaceName].getPublicKeys()
-    //}

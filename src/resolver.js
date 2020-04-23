@@ -1,35 +1,10 @@
 import { verifyJWT } from 'did-jwt'
 import DidDocument from 'ipfs-did-document'
 import base64url from 'base64url'
-import { registerMethod } from 'did-resolver'
+import { Resolver } from 'did-resolver'
 
 const PUBKEY_IDS = ['signingKey', 'managementKey', 'encryptionKey']
 const SUB_PUBKEY_IDS = ['subSigningKey', 'subEncryptionKey']
-
-function register (ipfs, opts = {}) {
-  registerMethod('3', (_, { id }) => resolve(ipfs, id, opts))
-}
-
-async function resolve (ipfs, cid, { isRoot, pin }) {
-  let doc
-  try {
-    doc = await DidDocument.cidToDocument(ipfs, cid)
-    validateDoc(doc)
-    if (doc.root) {
-      if (isRoot) throw new Error('Only one layer subDoc allowed')
-      const rootDoc = await resolve(ipfs, doc.root.split(':')[2], { isRoot: true })
-      await verifyProof(doc)
-      doc = mergeDocuments(rootDoc, doc)
-    }
-    if (pin) await ipfs.pin.add(cid)
-  } catch (e) {
-    try {
-      await ipfs.pin.rm(cid)
-    } catch (e) {}
-    throw new Error('Invalid 3ID')
-  }
-  return doc
-}
 
 function validateDoc (doc) {
   let pubKeyIds = PUBKEY_IDS
@@ -50,7 +25,7 @@ function encodeSection (data) {
   return base64url.encode(JSON.stringify(data))
 }
 
-async function verifyProof (subDoc) {
+async function verifyProof (subDoc, resolver) {
   const subSigningKey = subDoc.publicKey.find(entry => entry.id.includes(SUB_PUBKEY_IDS[0])).publicKeyHex
   const subEncryptionKey = subDoc.publicKey.find(entry => entry.id.includes(SUB_PUBKEY_IDS[1])).publicKeyBase64
   const payload = encodeSection({
@@ -62,7 +37,7 @@ async function verifyProof (subDoc) {
   })
   const header = encodeSection({ typ: 'JWT', alg: subDoc.proof.alg })
   const jwt = `${header}.${payload}.${subDoc.proof.signature}`
-  await verifyJWT(jwt)
+  await verifyJWT(jwt, { resolver })
 }
 
 function mergeDocuments (doc, subDoc) {
@@ -70,4 +45,34 @@ function mergeDocuments (doc, subDoc) {
   return subDoc
 }
 
-module.exports = register
+function getResolver (ipfs, { pin } = {}) {
+  async function resolve (did, parsed) {
+    async function _resolve (cid, isRoot = false) {
+      let doc
+      try {
+        doc = await DidDocument.cidToDocument(ipfs, cid)
+        validateDoc(doc)
+        if (doc.root) {
+          if (isRoot) throw new Error('Only one layer subDoc allowed')
+          const rootDoc = await _resolve(doc.root.split(':')[2], true)
+          await verifyProof(doc, localResolver)
+          doc = mergeDocuments(rootDoc, doc)
+        }
+        if (pin) await ipfs.pin.add(cid)
+      } catch (e) {
+        try {
+          await ipfs.pin.rm(cid)
+        } catch (e) {}
+        throw new Error('Invalid 3ID')
+      }
+      return doc
+    }
+    return _resolve(parsed.id)
+  }
+
+  const resolveMethods = { '3': resolve }
+  const localResolver = new Resolver(resolveMethods)
+  return resolveMethods
+}
+
+module.exports = { getResolver }

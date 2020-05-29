@@ -53,14 +53,15 @@ describe('3ID Resolver', () => {
         await expect(resolver.resolve(doc.DID)).resolves.toEqual(rawDoc)
         rootDID = doc.DID
         rootCID = cid
-        await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
+        await expect(ipfs.pin.ls(cid).next()).rejects.toMatchSnapshot()
       })
 
       it('should pin DID document if option given', async () => {
         const threeIdResolverPin = getResolver(ipfs, { pin: true })
         const resolver2 = new Resolver(threeIdResolverPin)
         await resolver2.resolve(rootDID)
-        expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
+        const pinnedCid = (await ipfs.pin.ls(rootCID).next()).value.cid
+        expect(pinnedCid.toString()).toEqual(rootCID.toString())
         await ipfs.pin.rm(rootCID)
       })
     })
@@ -113,15 +114,17 @@ describe('3ID Resolver', () => {
         subCID = cid
 
         await expect(resolver.resolve(doc.DID)).resolves.toMatchSnapshot()
-        await expect(ipfs.pin.ls(cid)).rejects.toMatchSnapshot()
+        await expect(ipfs.pin.ls(cid).next()).rejects.toMatchSnapshot()
       })
 
       it('should pin DID document if option given', async () => {
         const threeIdResolverPin = getResolver(ipfs, { pin: true })
         const resolver2 = new Resolver(threeIdResolverPin)
         await resolver2.resolve(subDID)
-        expect((await ipfs.pin.ls(rootCID))[0].hash).toEqual(rootCID.toString())
-        expect((await ipfs.pin.ls(subCID))[0].hash).toEqual(subCID.toString())
+        const pinnedCid1 = (await ipfs.pin.ls(rootCID).next()).value.cid
+        expect(pinnedCid1.toString()).toEqual(rootCID.toString())
+        const pinnedCid2 = (await ipfs.pin.ls(subCID).next()).value.cid
+        expect(pinnedCid2.toString()).toEqual(subCID.toString())
       })
     })
   })

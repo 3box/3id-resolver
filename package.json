@@ -30,7 +30,7 @@
     "@babel/preset-env": "^7.1.0",
     "@babel/preset-react": "^7.0.0",
     "babel-core": "7.0.0-bridge.0",
-    "ipfs": "^0.40.0",
+    "ipfs": "^0.44.0",
     "jest": "^22.4.0",
     "regenerator-runtime": "^0.11.1",
     "standard": "^11.0.0"

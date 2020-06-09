@@ -4,6 +4,10 @@ update_configs:
     target_branch: "develop"
     directory: "/"
     update_schedule: "weekly"
+    default_reviewers:
+      - "oed"
+    default_assignees:
+      - "oed"
     allowed_updates:
       - match:
           dependency_type: "production"

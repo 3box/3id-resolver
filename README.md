@@ -50,3 +50,5 @@ Result:
 }
 ```
 
+## Maintainers
+[@oed](https://github.com/oed)

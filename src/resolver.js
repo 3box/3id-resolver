@@ -61,7 +61,7 @@ function getResolver (ipfs, { pin } = {}) {
         if (pin) await ipfs.pin.add(cid)
       } catch (e) {
         try {
-          await ipfs.pin.rm(cid)
+          if (pin) await ipfs.pin.rm(cid)
         } catch (e) {}
         throw new Error('Invalid 3ID')
       }

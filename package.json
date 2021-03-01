@@ -39,7 +39,7 @@
     "@babel/runtime": "^7.1.2",
     "base64url": "^3.0.1",
     "did-jwt": "^4.2.0",
-    "did-resolver": "^1.1.0",
+    "did-resolver": "^2.2.0",
     "ipfs-did-document": "^1.2.3"
   },
   "browser": {

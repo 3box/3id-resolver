@@ -38,7 +38,7 @@
   "dependencies": {
     "@babel/runtime": "^7.1.2",
     "base64url": "^3.0.1",
-    "did-jwt": "^4.2.0",
+    "did-jwt": "^5.1.2",
     "did-resolver": "^1.1.0",
     "ipfs-did-document": "^1.2.3"
   },

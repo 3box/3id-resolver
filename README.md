@@ -1,3 +1,6 @@
+# ⚠️ ⚠️ Deprecated in favor of Ceramic ⚠️ ⚠️ 
+> 3box.js and related tools built by 3Box Labs are deprecated and no loger supported. Developers are encurraged to build with https://ceramic.network which is a more secure and decentralized protocol for sovereign data.
+
 # 3ID Resolver
 
 This library is intended to resolve 3ID DID documents. 3ID is a thin identity protocol that uses ipfs and ethereum to publish and rotate the cryptographic keys used by an identity.
